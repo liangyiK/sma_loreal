@@ -1,0 +1,37 @@
+CSV的欄位細節
+
+def standardize_dataframes(mudata_p, mudata_d):
+    # 建立統一的欄位結構
+    common_columns = [
+        'system_id', 'dataSource', 'artUrl', 'artDate', 
+        'artTitle', 'artContent', 'author', 'comment_info', 
+        'user_profile', 'board_category'
+    ]
+    
+    # PTT資料欄位映射
+    ptt_mapped = mudata_p.copy()
+    ptt_mapped['author'] = ptt_mapped['artPoster']
+    ptt_mapped['comment_info'] = ptt_mapped['artComment']
+    ptt_mapped['user_profile'] = None  # PTT沒有用戶資料
+    ptt_mapped['board_category'] = ptt_mapped['artCatagory']
+    
+    # DCARD資料欄位映射
+    dcard_mapped = mudata_d.copy()
+    dcard_mapped['author'] = dcard_mapped['department']  # 或其他識別欄位
+    dcard_mapped['comment_info'] = dcard_mapped['commentCount'].astype(str)
+    dcard_mapped['user_profile'] = dcard_mapped['gender'] + '_' + dcard_mapped['school']
+    dcard_mapped['board_category'] = dcard_mapped['boardID']
+    
+    # 選取統一欄位
+    ptt_final = ptt_mapped[common_columns]
+    dcard_final = dcard_mapped[common_columns]
+    
+    return ptt_final, dcard_final
+
+def normalize_dates(df):
+    # 統一時間格式為 YYYY-MM-DD HH:MM:SS
+    df['artDate'] = pd.to_datetime(df['artDate'], errors='coerce')
+    df['year'] = df['artDate'].dt.year
+    df['month'] = df['artDate'].dt.month
+    df['weekday'] = df['artDate'].dt.day_name()
+    return df
